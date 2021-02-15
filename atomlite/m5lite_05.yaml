@@ -1,0 +1,45 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: m5_lite_05
+
+esphome:
+  name: ${esphome_name}
+  platform: ESP32
+  board: pico32
+  platformio_options:
+    upload_speed: 115200
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${esphome_name}
+    password: ${cap_passowrd}
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ${api_password}
+
+ota:
+  password: ${ota_password}
+
+remote_transmitter:
+  pin: 26
+  carrier_duty_percent: 50%
+
+climate:
+  - platform: coolix       # adjust to match your AC unit!
+    name: ${esphome_name} Toshiba AC
+  # - platform: mitsubishi       # adjust to match your AC unit!
+  #   name: ${esphome_name} mitsubishi AC
+
+sensor:
+  - <<: !include ../common/sensor/wifi_signal.yaml
+  - <<: !include ../common/sensor/uptime.yaml

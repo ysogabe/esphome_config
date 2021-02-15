@@ -1,0 +1,48 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: m5_lite_02
+
+packages:
+  device_base: !include ../common/m5lite_core.yaml
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 22
+      mode: INPUT_PULLUP
+    name: ${esphome_name}_Door
+    device_class: door
+    filters:
+      - delayed_on: 100ms
+    <<: !include ../common/sensor/m5lite_binsensor_effect.yaml
+
+# For Env-Unit Sensor
+i2c:
+  sda: 26
+  scl: 32
+  scan: True
+  id: bus_a
+  frequency: 100000
+
+sensor:
+  - platform: sgp30
+    eco2:
+      name: ${esphome_name}-e-CO2
+      accuracy_decimals: 1
+      filters:
+      - median:
+          window_size: 6
+          send_every: 4
+          send_first_at: 4
+    tvoc:
+      name: "TVOC"
+      accuracy_decimals: 1
+      filters:
+      - median:
+          window_size: 6
+          send_every: 4
+          send_first_at: 4
+    address: 0x58
+    update_interval: 5s
+  - <<: !include ../common/sensor/wifi_signal.yaml
+  - <<: !include ../common/sensor/uptime.yaml

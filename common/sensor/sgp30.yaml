@@ -1,0 +1,20 @@
+  - platform: sgp30
+    address: 0x58
+    update_interval: 5s
+    i2c_id: bus_grove
+    eco2:
+      name: ${esphome_name}-e-CO2
+      accuracy_decimals: 1
+      filters:
+      - median:
+          window_size: 6
+          send_every: 4
+          send_first_at: 4
+    tvoc:
+      name: "TVOC"
+      accuracy_decimals: 1
+      filters:
+      - median:
+          window_size: 6
+          send_every: 4
+          send_first_at: 4

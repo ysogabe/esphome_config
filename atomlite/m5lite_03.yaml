@@ -1,0 +1,52 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: m5_lite_03
+
+packages:
+  device_base: !include ../common/m5lite_core.yaml
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO39
+      inverted: false
+    name: ${esphome_name} Button
+    on_press:
+      then:
+        - switch.toggle: relay1
+switch:
+  - platform: restart
+    name: ${esphome_name} Restart
+  - platform: gpio
+    pin:
+      number: GPIO22
+    name: ${esphome_name} Relay
+    id: relay1
+    on_turn_on:
+      then:
+        - light.turn_off: led1
+    on_turn_off:
+      then:
+        - light.turn_on: led1
+
+# For I2C
+i2c:
+  sda: 32
+  scl: 26
+  scan: True
+  id: bus_a
+  # frequency: 100000
+
+sensor:
+  - platform: bme280
+    temperature:
+      name: "BME280 Temperature"
+      oversampling: 16x
+    pressure:
+      name: "BME280 Pressure"
+    humidity:
+      name: "BME280 Humidity"
+    address: 0x76
+    update_interval: 60s
+  - <<: !include ../common/sensor/wifi_signal.yaml
+  - <<: !include ../common/sensor/uptime.yaml

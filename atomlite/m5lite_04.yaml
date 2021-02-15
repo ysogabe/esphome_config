@@ -1,0 +1,40 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: m5_lite_04
+
+packages:
+  device_base: !include ../common/m5lite_core.yaml
+
+# For Door Sensor
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: 22
+      mode: INPUT_PULLUP
+    name: ${esphome_name}_Door_01
+    device_class: door
+    filters:
+      - delayed_on: 100ms
+    <<: !include ../common/sensor/m5lite_binsensor_effect.yaml
+  - platform: gpio
+    pin:
+      number: 19
+      mode: INPUT_PULLUP
+    name: ${esphome_name}_Door_02
+    device_class: door
+    filters:
+      - delayed_on: 100ms
+    <<: !include ../common/sensor/m5lite_binsensor_effect.yaml
+  - platform: gpio
+    name: ${esphome_name}_PIR
+    pin:
+      number: 32
+      mode: INPUT
+    filters:
+      - delayed_off: 60000ms
+    device_class: motion
+    <<: !include ../common/sensor/m5lite_binsensor_effect.yaml
+
+sensor:
+  - <<: !include ../common/sensor/wifi_signal.yaml
+  - <<: !include ../common/sensor/uptime.yaml

@@ -1,0 +1,2 @@
+  - platform: uptime
+    name: ${esphome_name} Uptime
