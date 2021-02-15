@@ -1,0 +1,169 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: m5stickc_01
+
+esphome:
+  name: ${esphome_name}
+  platform: ESP32
+  board: m5stick-c
+  platformio_options:
+    upload_speed: 115200
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${esphome_name}
+    password: ${cap_passowrd}
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ${api_password}
+
+ota:
+  password: ${ota_password}
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO37
+      inverted: true
+    id: button_a
+    on_press:
+      then:
+        - switch.toggle: led1
+  - platform: gpio
+    pin:
+      number: GPIO39
+      inverted: true
+    id: button_b
+    on_press:
+      then:
+        - switch.toggle: led1
+  - platform: homeassistant
+    name: ${esphome_name} view 01
+    id: door_01
+    entity_id: binary_sensor.m5_lite_02_door
+  - platform: homeassistant
+    name: ${esphome_name} view 02
+    id: door_02
+    entity_id: binary_sensor.living_door
+  - platform: homeassistant
+    name: ${esphome_name} view 03
+    id: door_03
+    entity_id: binary_sensor.m5_lite_04_door_01
+  - platform: homeassistant
+    name: ${esphome_name} view 04
+    id: door_04
+    entity_id: binary_sensor.m5_lite_04_door_02
+
+switch:
+  - platform: gpio
+    pin:
+      number: GPIO10
+      inverted: true
+    id: led1
+
+# For Env-Unit Sensor
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+    scan: True
+  - id: bus_grove
+    sda: 32
+    scl: 33
+    scan: True
+    frequency: 100000
+
+spi:
+  clk_pin: GPIO13
+  mosi_pin: GPIO15
+
+font:
+  - file: "fonts/times-new-roman.ttf"
+    id: font1
+    size: 24
+  - file: "fonts/times-new-roman.ttf"
+    id: font2
+    size: 36
+  - file: "fonts/times-new-roman.ttf"
+    id: font3
+    size: 48
+  - file: "fonts/DSEG14Classic-BoldItalic.ttf"
+    id: jfont
+    size: 44
+  - file: "fonts/ipaexg.ttf"
+    id: jfont1
+    size: 24
+    glyphs:
+      - 台
+      - リ
+      - ト
+      - 風
+
+# builtin 80x160 TFT
+display:
+  - platform: st7735
+    cs_pin: GPIO5
+    dc_pin: GPIO23
+    reset_pin: GPIO18
+    rotation: 270
+    lambda: |-
+      it.strftime(80, 80, id(jfont), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "%H:%M", id(sntp_time).now());
+
+      if(id(door_01).state) {
+        it.filled_rectangle(0, 0, 40, 25, ST7735_RED);
+        it.print(20, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "台");
+      } else {
+        it.filled_rectangle(0, 0, 40, 25, ST7735_BLUE);
+        it.print(20, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "台");
+      }
+      if(id(door_02).state) {
+        it.filled_rectangle(40, 0, 40, 25, ST7735_RED);
+        it.print(60, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "リ");
+      } else {
+        it.filled_rectangle(40, 0, 40, 25, ST7735_BLUE);
+        it.print(60, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "リ");
+      }
+      if(id(door_03).state) {
+        it.filled_rectangle(80, 0, 40, 25, ST7735_RED);
+        it.print(100, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "ト");
+      } else {
+        it.filled_rectangle(80, 0, 40, 25, ST7735_BLUE);
+        it.print(100, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "ト");
+      }
+      if(id(door_04).state) {
+        it.filled_rectangle(120, 0, 40, 25, ST7735_RED);
+        it.print(140, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "風");
+      } else {
+        it.filled_rectangle(120, 0, 40, 25, ST7735_BLUE);
+        it.print(140, 26, id(jfont1), ST7735_WHITE, TextAlign::BOTTOM_CENTER, "風");
+      }
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+  - platform: sntp
+    id: sntp_time
+
+# For Env-Unit Sensor
+sensor:
+  - <<: !include ../common/sensor/wifi_signal.yaml
+  - <<: !include ../common/sensor/uptime.yaml
+  - <<: !include ../common/sensor/sgp30.yaml
+  - platform: axp192
+    address: 0x34
+    i2c_id: bus_a
+    update_interval: 120s
+    battery_level:
+      name: "${esphome_name} Battery Level"
+      id: "m5stick_batterylevel"
+    brightness: 0.3

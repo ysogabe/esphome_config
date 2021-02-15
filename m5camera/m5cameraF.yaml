@@ -1,0 +1,66 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: m5cameraf
+
+esphome:
+  arduino_version: 1.0.2
+  name: ${esphome_name}
+  platform: ESP32
+  board: m5stack-core-esp32
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${esphome_name}
+    password: ${cap_passowrd}
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ${api_password}
+
+ota:
+  password: ${ota_password}
+
+switch:
+  - platform: restart
+    name: "M5Cam-F Restart"
+
+# binary_sensor:
+#   - platform: gpio
+#     name: "PIR"
+#     pin:
+#       number: 13
+#       mode: INPUT
+#     filters:
+#       - delayed_off: 60000ms
+#     device_class: motion
+sensor:
+  - platform: wifi_signal
+    name: ${esphome_name} WiFi Signal
+  - platform: uptime
+    name: ${esphome_name} Uptime
+# https://esphome.io/components/esp32_camera.html
+esp32_camera:
+  name: M5CAM-F
+  external_clock:
+    pin: GPIO27
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO22
+    scl: GPIO23
+  data_pins: [GPIO32, GPIO35, GPIO34, GPIO5, GPIO39, GPIO18, GPIO36, GPIO19]
+  vsync_pin: GPIO25
+  href_pin: GPIO26
+  pixel_clock_pin: GPIO21
+  reset_pin: GPIO15
+  idle_framerate: 0.05 fps
+  resolution: 640x480
+  jpeg_quality: 10
