@@ -1,0 +1,60 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: esp32cam01
+
+esphome:
+  name: ${esphome_name}
+  platform: ESP32
+  board: esp32cam
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${esphome_name}
+    password: ${cap_passowrd}
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ${api_password}
+
+ota:
+  password: ${ota_password}
+
+esp32_camera:
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+
+  # Image settings
+  name: ${esphome_name}
+
+switch:
+  - platform: gpio
+    name: "LED Flash"
+    pin:
+      number: 3
+      inverted: false
+  - platform: restart
+    name: "${esphome_name} Restart"
+
+sensor:
+  - platform: wifi_signal
+    name: ${esphome_name} WiFi Signal
+  - platform: uptime
+    name: ${esphome_name} Uptime
