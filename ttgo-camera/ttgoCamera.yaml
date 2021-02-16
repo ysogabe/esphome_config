@@ -1,0 +1,99 @@
+substitutions:
+  <<: !include ../secrets.yaml
+  esphome_name: ttgocam01
+# Build
+#  esphome -s esphome_name ttgocam02 ttgoCamera.yaml run
+esphome:
+  name: ${esphome_name}
+  platform: ESP32
+  board: esp32dev
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${esphome_name}
+    password: ${cap_passowrd}
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ${api_password}
+
+ota:
+  password: ${ota_password}
+
+switch:
+  - platform: restart
+    name: ${esphome_name} Restart
+
+binary_sensor:
+  - platform: gpio
+    name: ${esphome_name}-PIR
+    pin:
+      number: 33
+      mode: INPUT
+    filters:
+      - delayed_off: 60000ms
+    device_class: motion
+    id: pir
+
+# https://esphome.io/components/esp32_camera.html
+esp32_camera:
+  name: ${esphome_name}
+  external_clock:
+    pin: GPIO32
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO13
+    scl: GPIO12
+  data_pins: [GPIO5, GPIO14, GPIO4, GPIO15, GPIO18, GPIO23, GPIO36, GPIO39]
+  vsync_pin: GPIO27
+  href_pin: GPIO25
+  pixel_clock_pin: GPIO19
+  idle_framerate: 0.05 fps
+  resolution: 640x480
+  jpeg_quality: 10
+
+sensor:
+  - platform: wifi_signal
+    name: ${esphome_name} WiFi Signal
+  - platform: uptime
+    name: ${esphome_name} Uptime
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+font:
+  - file: "fonts/times-new-roman.ttf"
+    id: tnr1
+    size: 20
+  - file: "fonts/times-new-roman.ttf"
+    id: tnr2
+    size: 24
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    rotation: 180
+    brightness: 0.8
+    lambda: |-
+      if (id(pir).state) {
+        it.fill(COLOR_OFF);
+        it.strftime(64, 0, id(tnr1), TextAlign::TOP_CENTER,"%Y-%m-%d", id(homeassistant_time).now());
+        it.strftime(64, 64, id(tnr2), TextAlign::BASELINE_CENTER, "%I:%M:%S%p", id(homeassistant_time).now());
+      } else {
+        it.fill(COLOR_OFF);
+      }
